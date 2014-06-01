@@ -1,6 +1,6 @@
 # monaco-utils #
 
-Please backup your game files before using these.
+Please backup your game files before using these.  These probably won't work in non-English versions.
 
 ### Dependencies ###
 
