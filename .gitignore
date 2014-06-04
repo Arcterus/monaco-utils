@@ -1,0 +1,8 @@
+*.dylib
+/Monamod.app
+/monamod-mac
+/libmonamod
+/monamod
+/word_sub
+
+*.swp
