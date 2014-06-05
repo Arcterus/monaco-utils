@@ -5,7 +5,7 @@
 use std::io;
 
 pub static STRING_TABLE_START: uint = 0x1480;
-pub static STRING_TABLE_END: uint = 0x6630;
+pub static STRING_TABLE_END: uint = 0x662c;
 
 pub fn sub_word(args: Vec<String>) {
 	let orig = args.get(1);

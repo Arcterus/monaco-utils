@@ -3,7 +3,7 @@ PLATFORM ?= mac
 RUSTC ?= rustc
 RUSTCFLAGS ?= -O -L . -L src/rust-cocoa -L src/rust-core-foundation
 OBJCC ?= clang
-OBJCFLAGS ?= -framework Foundation -framework Cocoa -mmacosx-version-min=10.4.0
+OBJCFLAGS ?= -framework AppKit -mmacosx-version-min=10.4.0
 
 PROGS := monamod word_sub
 
