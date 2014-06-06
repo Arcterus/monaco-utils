@@ -2,7 +2,10 @@
 
 #define STRING_TABLE_END 0x662c
 
-@implementation PhraseTableViewDataSource
+@implementation PhraseTableViewDataSource {
+	NSArray *_phrases;
+	NSMutableDictionary *_changed;
+}
 
 - (id)initWithData:(NSData *)data {
 	if(self = [super init]) {
@@ -20,7 +23,7 @@
 				[msg appendBytes:(bytes + x) length:1];
 			}
 			[msg appendBytes:zeros length:1];
-			[phrases addObject:[[NSString alloc] initWithData:msg encoding:NSISOLatin1StringEncoding]];
+			[phrases addObject:[NSArray arrayWithObjects:[NSNumber numberWithInteger:i], [[NSString alloc] initWithData:msg encoding:NSISOLatin1StringEncoding], nil]];
 			[msg setLength:0];
 			i = range.location + sizeof(zeros) - 1;
 		}
@@ -38,7 +41,12 @@
 	if(rowIndex >= [_phrases count]) {
 		return nil;
 	} else {
-		return [_phrases objectAtIndex:rowIndex];
+		NSArray *data = [_phrases objectAtIndex:rowIndex];
+		if([tableColumn.identifier isEqualTo:@"offsets"]) {
+			return [data objectAtIndex:0];
+		} else {
+			return [data objectAtIndex:1];
+		}
 	}
 }
 

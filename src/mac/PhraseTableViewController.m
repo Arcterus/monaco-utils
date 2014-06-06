@@ -12,15 +12,30 @@
 	PhraseTableViewDelegate *_delegate;
 }
 
++ (NSCell *)createHeaderCell:(NSString *)name {
+	NSCell *header = [[NSCell alloc] initTextCell:name];
+	header.backgroundStyle = NSBackgroundStyleRaised;
+	return header;
+}
+
++ (NSTableColumn *)createTableColumn:(NSString *)ident {
+	NSTableColumn *column = [[NSTableColumn alloc] initWithIdentifier:ident];
+	column.headerCell = [PhraseTableViewController createHeaderCell:[ident capitalizedString]];
+	return column;
+}
+
 // TODO: make the view look nicer
 // TODO: change column title
-// TODO: maybe provide secondary column with offset of string?
 - (id)initWithWindow:(NSWindow *)window {
 	if(self = [super init]) {
 		_window = window;
 
 		_tableView = [[NSTableView alloc] init];
-		[_tableView addTableColumn:[[NSTableColumn alloc] initWithIdentifier:@"phrases"]];
+		NSTableColumn *offsets = [PhraseTableViewController createTableColumn:@"offsets"];
+		offsets.editable = NO;
+		[_tableView addTableColumn:offsets];
+		[offsets release];
+		[_tableView addTableColumn:[PhraseTableViewController createTableColumn:@"phrases"]];
 		_source = [[PhraseTableViewDataSource alloc] initWithData:[NSData dataWithContentsOfFile:[LANG_FILE stringByExpandingTildeInPath]]];
 		_delegate = [[PhraseTableViewDelegate alloc] init];
 		_tableView.dataSource = _source;
