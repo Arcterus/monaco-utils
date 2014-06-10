@@ -1,13 +1,14 @@
 #import "PhraseTableViewController.h"
 #import "PhraseTableViewDataSource.h"
 #import "PhraseTableViewDelegate.h"
-
-#define LANG_FILE @"~/Library/Application Support/Steam/SteamApps/common/Monaco/MONACO.app/Contents/Resources/Lang/eng/Strings/All.lang"  // TODO: portability
+#import "Constants.h"
 
 @implementation PhraseTableViewController {
 	NSWindow *_window;
+	NSSplitView *_mainView;
 	NSScrollView *_scrollView;
 	NSTableView *_tableView;
+	NSSearchField *_searchBar;
 	PhraseTableViewDataSource *_source;
 	PhraseTableViewDelegate *_delegate;
 }
@@ -24,17 +25,17 @@
 	return column;
 }
 
+- (void)reloadNoticeReceived {
+	[_tableView reloadData];
+}
+
 // TODO: make the view look nicer
-// TODO: change column title
 - (id)initWithWindow:(NSWindow *)window {
 	if(self = [super init]) {
 		_window = window;
 
 		_tableView = [[NSTableView alloc] init];
-		NSTableColumn *offsets = [PhraseTableViewController createTableColumn:@"offsets"];
-		offsets.editable = NO;
-		[_tableView addTableColumn:offsets];
-		[offsets release];
+		[_tableView addTableColumn:[PhraseTableViewController createTableColumn:@"offsets"]];
 		[_tableView addTableColumn:[PhraseTableViewController createTableColumn:@"phrases"]];
 		_source = [[PhraseTableViewDataSource alloc] initWithData:[NSData dataWithContentsOfFile:[LANG_FILE stringByExpandingTildeInPath]]];
 		_delegate = [[PhraseTableViewDelegate alloc] init];
@@ -46,17 +47,32 @@
 		_scrollView.documentView = _tableView;
 		_scrollView.hasVerticalScroller = YES;
 
-		self.view = _scrollView;
+		_searchBar = [[NSSearchField alloc] init];
+		[_searchBar.cell setPlaceholderString:@"Search..."];
+		[_searchBar setDelegate:_source];
+		[_searchBar.cell setSendsSearchStringImmediately:YES];
+		_source.searchBar = _searchBar;
+
+		_mainView = [[NSSplitView alloc] init];
+		_mainView.dividerStyle = NSSplitViewDividerStyleThin;
+		[_mainView addSubview:_searchBar];
+		[_mainView addSubview:_scrollView];
+
+		self.view = _mainView;
+
+		[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(reloadNoticeReceived) name:@"phrases_reloaded" object:nil];
 	}
 	return self;
 }
 
 - (void)loadView {
-	_window.contentView = [self view];
+	_window.contentView = self.view;
 }
 
 - (void)dealloc {
 	[_scrollView release];
+	[_searchBar release];
+	[_mainView release];
 	[_tableView release];
 	[_source release];
 	[_delegate release];

@@ -1,9 +1,8 @@
 #import <Cocoa/Cocoa.h>
 #import "AppDelegate.h"
 
-int main(int argc, const char *argv[]) {
+void objc_main() {
 	[NSApplication sharedApplication];
 	[NSApp setDelegate:[[AppDelegate alloc] init]];
 	[NSApp run];
-	return 0;
 }

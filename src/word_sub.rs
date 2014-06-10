@@ -10,6 +10,6 @@ fn main() {
 		let _ = writeln!(&mut io::stderr() as &mut Writer, "expected at least two arguments");
 		os::set_exit_status(1);
 	} else {
-		monamod::sub_word(args);
+		monamod::sub_word(args.tail());
 	}
 }

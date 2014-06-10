@@ -1,11 +1,13 @@
 PLATFORM ?= mac
 
 RUSTC ?= rustc
-RUSTCFLAGS ?= -O -L . -L src/rust-cocoa -L src/rust-core-foundation
+RUSTCFLAGS ?= -O -L .
 OBJCC ?= clang
-OBJCFLAGS ?= -framework AppKit -mmacosx-version-min=10.4.0
+OBJCFLAGS ?= -mmacosx-version-min=10.5.0
 
 PROGS := monamod word_sub
+
+LIBMONAMOD := $(shell rustc --crate-type=dylib --crate-file-name src/lib.rs)
 
 ifeq ($(PLATFORM),mac)
 	GUI_PLATFORM := monamod-mac
@@ -17,21 +19,21 @@ all: $(PROGS)
 
 monamod: $(GUI_PLATFORM)
 
-monamod-mac: src/mac/*.h src/mac/*.m src/mac/Info.plist src/mac/en.lproj
-	$(OBJCC) $(OBJCFLAGS) -o monamod src/mac/*.m
+monamod-mac: src/mac/*.h src/mac/*.m src/mac/*.rs src/mac/Info.plist src/mac/en.lproj $(LIBMONAMOD)
+	$(OBJCC) $(OBJCFLAGS) -c src/mac/*.m
+	$(RUSTC) $(RUSTFLAGS) -L . -C link-args="`ls . | grep '\.o'`" -o monamod src/mac/main.rs
 	mkdir -p Monamod.app/Contents/Resources
 	mkdir -p Monamod.app/Contents/MacOS
-	cp monamod Monamod.app/Contents/MacOS
+	cp monamod $(LIBMONAMOD) Monamod.app/Contents/MacOS
 	cp src/mac/Info.plist Monamod.app/Contents
 	cp -r src/mac/en.lproj Monamod.app/Contents/Resources
 	touch $@
 
-word_sub: src/word_sub.rs libmonamod
+word_sub: src/word_sub.rs $(LIBMONAMOD)
 	$(RUSTC) $(RUSTCFLAGS) -o $@ $<
 
-libmonamod: src/lib.rs
+$(LIBMONAMOD): src/lib.rs
 	$(RUSTC) $(RUSTCFLAGS) $<
-	touch $@
 
 clean:
-	rm -rf $(PROGS) libmonamod* monamod-mac
+	rm -rf $(PROGS) libmonamod* monamod-mac *.o Monamod.app

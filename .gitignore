@@ -1,4 +1,5 @@
 *.dylib
+*.o
 /Monamod.app
 /monamod-mac
 /libmonamod

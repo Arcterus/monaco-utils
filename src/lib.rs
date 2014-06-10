@@ -2,16 +2,29 @@
 
 #![crate_type = "dylib"]
 
+extern crate libc;
+
 use std::io;
+use std::os;
+use std::str;
 
-pub static STRING_TABLE_START: uint = 0x1480;
-pub static STRING_TABLE_END: uint = 0x662c;
+#[cfg(target_os = "macos")]
+static ALL_LANG: &'static str = "~/Library/Application Support/Steam/SteamApps/common/Monaco/MONACO.app/Contents/Resources/Lang/eng/Strings/All.lang";
 
-pub fn sub_word(args: Vec<String>) {
-	let orig = args.get(1);
-	let replace = args.get(2);
+static STRING_TABLE_START: uint = 0x1480;
+static STRING_TABLE_END: uint = 0x662c;
 
-	let mut file = io::File::open_mode(&Path::new("All.lang"), io::Open, io::ReadWrite).unwrap();
+pub fn sub_word(args: &[String]) {
+	let orig = &args[0];
+	let replace = &args[1];
+
+	let path =
+		if ALL_LANG.char_at(0) == '~' {
+			os::homedir().unwrap().join(ALL_LANG.slice_from(2))
+		} else {
+			Path::new(ALL_LANG)
+		};
+	let mut file = io::File::open_mode(&path, io::Open, io::ReadWrite).unwrap();
 	let mut code = file.read_to_end().unwrap();
 
 	let vec: Vec<u8> = orig.as_slice().bytes().flat_map(|x| (box [x as u8, 0, 0, 0]).move_iter()).take(4 * orig.len() - 3).collect();
@@ -52,4 +65,10 @@ pub fn sub_word(args: Vec<String>) {
 	}
 	let _ = file.seek(0, io::SeekSet);
 	let _ = file.write(code.as_slice());
+}
+
+// C FFI
+#[no_mangle]
+pub unsafe extern "C" fn monamod_sub_word(orig: *libc::c_char, replace: *libc::c_char) {
+	sub_word([str::raw::from_c_str(orig), str::raw::from_c_str(replace)]);
 }
